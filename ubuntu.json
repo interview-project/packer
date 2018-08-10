@@ -1,0 +1,33 @@
+{
+  "variables": {
+    "cookbook": ""
+  },
+  "builders": [{
+    "type": "amazon-ebs",
+    "region": "us-east-1",
+    "source_ami": "ami-759bc50a",
+    "instance_type": "t1.micro",
+    "ssh_username": "ubuntu",
+    "ami_name": "jenkins {{isotime | clean_ami_name}}"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "inline": [
+      "sleep 60",
+      "sudo apt-get update && sudo apt-get upgrade -y",
+      "curl -L https://omnitruck.chef.io/install.sh | sudo bash"
+    ]
+  },
+  {
+    "type": "chef-solo",
+    "cookbook_paths": ["cookbooks"],
+    "run_list": "{{user `cookbook`}}::default"
+  }],
+  "post-processors": [
+    {
+      "type": "manifest",
+      "output": "{{user `cookbook`}}-manifest.json",
+      "strip_path": true
+    }
+  ]
+}
